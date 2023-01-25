@@ -2,19 +2,28 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
+	"net/http"
 
 	"github.com/sungjunleeee/juncoin/blockchain"
 )
 
+const port string = ":4000"
+
+type homeData struct {
+	PageTitle string
+	Blocks    []*blockchain.Block
+}
+
+func handleHome(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("templates/home.html"))
+	data := homeData{"Home", blockchain.GetBlockChain().AllBlocks()}
+	tmpl.Execute(w, data)
+}
+
 func main() {
-	chain := blockchain.GetBlockChain() // First block is already here.
-	chain.AddBlock("Second Block")
-	chain.AddBlock("Third Block")
-	chain.AddBlock("Fourth Block")
-	chain.AllBlocks()
-	for _, block := range chain.AllBlocks() {
-		fmt.Printf("Data: %s\n", block.Data)
-		fmt.Printf("Data: %s\n", block.Hash)
-		fmt.Printf("Data: %s\n", block.PrevHash)
-	}
+	http.HandleFunc("/", handleHome)
+	fmt.Println("Server is running on http://localhost" + port)
+	log.Fatal(http.ListenAndServe(port, nil))
 }
