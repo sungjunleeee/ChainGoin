@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	port         string = ":4000"
 	templatePath string = "explorer/templates/"
 )
 
@@ -40,12 +39,12 @@ func handleAdd(w http.ResponseWriter, r *http.Request) {
 }
 
 // Start starts the web server
-func Start() {
+func Start(newPort int) {
 	templates = template.Must(template.ParseGlob(templatePath + "pages/*.gohtml"))
 	// updating the existing templates variable to include the partials
 	templates = template.Must(templates.ParseGlob(templatePath + "partials/*.gohtml"))
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/add", handleAdd)
-	fmt.Println("Server is running on http://localhost" + port)
-	log.Fatal(http.ListenAndServe(port, nil))
+	fmt.Printf("Server is running on http://localhost:%d\n", newPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", newPort), nil))
 }
