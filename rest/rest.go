@@ -35,6 +35,10 @@ type addBlockBody struct {
 	Message string
 }
 
+type errorResponse struct {
+	ErrorMessage string `json:"errorMessage"`
+}
+
 func documentation(w http.ResponseWriter, r *http.Request) {
 	data := []urlDescription{
 		{
@@ -86,8 +90,12 @@ func findBlock(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["height"])
 	utils.HandleErr(err)
 	block, err := blockchain.GetBlockChain().FindBlock(id)
-	utils.HandleErr(err)
-	json.NewEncoder(w).Encode(block)
+	encoder := json.NewEncoder(w)
+	if err == blockchain.ErrNotFound {
+		encoder.Encode(errorResponse{err.Error()})
+	} else {
+		encoder.Encode(block)
+	}
 }
 
 // Start starts the rest API
