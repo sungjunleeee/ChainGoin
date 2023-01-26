@@ -9,8 +9,18 @@ import (
 
 const port string = ":4000"
 
+// URL is a custom type for overriding methods (MarshalText)
+type URL string
+
+// MarshalText implements to intervenes in the json.Marshal process
+func (u URL) MarshalText() ([]byte, error) {
+	url := fmt.Sprintf("http://localhost%s%s", port, u)
+	return []byte(url), nil
+}
+
+// URLDescription is a struct for API calls
 type URLDescription struct {
-	URL         string `json:"url"`
+	URL         URL    `json:"url"`
 	Method      string `json:"method"`
 	Description string `json:"description"`
 	Payload     string `json:"payload,omitempty"`
@@ -19,12 +29,12 @@ type URLDescription struct {
 func documentation(w http.ResponseWriter, r *http.Request) {
 	data := []URLDescription{
 		{
-			URL:         "/",
+			URL:         URL("/"),
 			Method:      "GET",
 			Description: "See documentation",
 		},
 		{
-			URL:         "/blocks",
+			URL:         URL("/blocks"),
 			Method:      "POST",
 			Description: "See documentation",
 			Payload:     "data:string",
@@ -34,7 +44,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(data)
 	// equivalent to:
 	// b, err := json.Marshal(data)
-	// handleErr(err)
+	// utils.handleErr(err)
 	// fmt.Fprintf(w, "%s", b)
 }
 
