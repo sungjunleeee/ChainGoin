@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/sungjunleeee/juncoin/blockchain"
 	"github.com/sungjunleeee/juncoin/utils"
 )
@@ -52,7 +54,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 			Payload:     "data:string",
 		},
 		{
-			URL:         url("/blocks/{id}"),
+			URL:         url("/blocks/{height}"),
 			Method:      "GET",
 			Description: "See a block",
 		},
@@ -65,7 +67,7 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "%s", b)
 }
 
-func handleBlocks(w http.ResponseWriter, r *http.Request) {
+func getBlocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		w.Header().Add("Content-Type", "application/json")
@@ -79,12 +81,22 @@ func handleBlocks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func findBlock(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["height"])
+	utils.HandleErr(err)
+	block, err := blockchain.GetBlockChain().FindBlock(id)
+	utils.HandleErr(err)
+	json.NewEncoder(w).Encode(block)
+}
+
 // Start starts the rest API
 func Start(newPort int) {
-	handler := http.NewServeMux()
+	router := mux.NewRouter()
 	port = fmt.Sprintf(":%d", newPort)
-	handler.HandleFunc("/", documentation)
-	handler.HandleFunc("/blocks", handleBlocks)
+	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/blocks", getBlocks).Methods("GET", "POST") // won't allow other methods
+	router.HandleFunc("/blocks/{height:[0-9]+}", findBlock).Methods("GET")
 	fmt.Printf("Server is running on http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, handler))
+	log.Fatal(http.ListenAndServe(port, router))
 }
