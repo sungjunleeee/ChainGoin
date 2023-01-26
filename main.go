@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/sungjunleeee/juncoin/blockchain"
+	"github.com/sungjunleeee/juncoin/utils"
 )
 
 const port string = ":4000"
@@ -24,6 +27,10 @@ type URLDescription struct {
 	Method      string `json:"method"`
 	Description string `json:"description"`
 	Payload     string `json:"payload,omitempty"`
+}
+
+type AddBlockBody struct {
+	Message string
 }
 
 func documentation(w http.ResponseWriter, r *http.Request) {
@@ -48,10 +55,25 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "%s", b)
 }
 
+func handleBlocks(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		w.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
+	case "POST":
+		var addBlockBody AddBlockBody
+		// Decode (Unmarshal) is case-insensitive: Message == message
+		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
+		blockchain.GetBlockChain().AddBlock(addBlockBody.Message)
+		w.WriteHeader(http.StatusCreated)
+	}
+}
+
 func main() {
 	// The below will be called twice
 	// since the browser will send a request for the favicon
 	http.HandleFunc("/", documentation)
+	http.HandleFunc("/blocks", handleBlocks)
 	fmt.Printf("Server is running on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }
