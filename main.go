@@ -9,7 +9,12 @@ import (
 	"github.com/sungjunleeee/juncoin/blockchain"
 )
 
-const port string = ":4000"
+const (
+	port         string = ":4000"
+	templatePath string = "templates/"
+)
+
+var templates *template.Template
 
 type homeData struct {
 	PageTitle string
@@ -17,12 +22,14 @@ type homeData struct {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/home.html"))
 	data := homeData{"Home", blockchain.GetBlockChain().AllBlocks()}
-	tmpl.Execute(w, data)
+	templates.ExecuteTemplate(w, "home", data)
 }
 
 func main() {
+	templates = template.Must(template.ParseGlob(templatePath + "pages/*.gohtml"))
+	// updating the existing templates variable to include the partials
+	templates = template.Must(templates.ParseGlob(templatePath + "partials/*.gohtml"))
 	http.HandleFunc("/", handleHome)
 	fmt.Println("Server is running on http://localhost" + port)
 	log.Fatal(http.ListenAndServe(port, nil))
