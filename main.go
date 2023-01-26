@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
-	"github.com/sungjunleeee/juncoin/utils"
 )
 
 const port string = ":4000"
 
 type URLDescription struct {
-	URL         string
-	Method      string
-	Description string
+	URL         string `json:"url"`
+	Method      string `json:"method"`
+	Description string `json:"description"`
+	Payload     string `json:"payload,omitempty"`
 }
 
 func documentation(w http.ResponseWriter, r *http.Request) {
@@ -24,11 +23,19 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 			Method:      "GET",
 			Description: "See documentation",
 		},
+		{
+			URL:         "/blocks",
+			Method:      "POST",
+			Description: "See documentation",
+			Payload:     "data:string",
+		},
 	}
-	// convert interface to JSON
-	b, err := json.Marshal(data)
-	utils.HandleErr(err)
-	fmt.Printf("%s\n", b)
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
+	// equivalent to:
+	// b, err := json.Marshal(data)
+	// handleErr(err)
+	// fmt.Fprintf(w, "%s", b)
 }
 
 func main() {
