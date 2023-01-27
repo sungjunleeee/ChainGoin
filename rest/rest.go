@@ -63,18 +63,12 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 			Description: "See a block",
 		},
 	}
-	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(data)
-	// equivalent to:
-	// b, err := json.Marshal(data)
-	// utils.handleErr(err)
-	// fmt.Fprintf(w, "%s", b)
 }
 
 func getBlocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(blockchain.GetBlockChain().AllBlocks())
 	case "POST":
 		var addBlockBody addBlockBody
@@ -98,10 +92,18 @@ func findBlock(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func jsonContentTypeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
+}
+
 // Start starts the rest API
 func Start(newPort int) {
-	router := mux.NewRouter()
 	port = fmt.Sprintf(":%d", newPort)
+	router := mux.NewRouter()
+	router.Use(jsonContentTypeMiddleware) // middleware for routes below
 	router.HandleFunc("/", documentation).Methods("GET")
 	router.HandleFunc("/blocks", getBlocks).Methods("GET", "POST") // won't allow other methods
 	router.HandleFunc("/blocks/{height:[0-9]+}", findBlock).Methods("GET")
