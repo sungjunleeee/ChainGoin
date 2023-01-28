@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
@@ -17,12 +18,21 @@ func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
+
+	rest := flag.NewFlagSet("rest", flag.ExitOnError)
+	portFlag := rest.Int("port", 4000, "Sets the port of the server")
+
 	switch os.Args[1] {
 	case "html":
 		fmt.Println("Starting HTML explorer")
 	case "rest":
-		fmt.Println("Starting REST APIs")
+		rest.Parse(os.Args[2:])
 	default:
 		usage()
+	}
+
+	if rest.Parsed() {
+		fmt.Println(portFlag)
+		fmt.Println("Start server")
 	}
 }
