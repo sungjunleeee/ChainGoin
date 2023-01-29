@@ -1,7 +1,11 @@
 package main
 
-import "github.com/sungjunleeee/juncoin/blockchain"
+import (
+	"github.com/sungjunleeee/juncoin/cli"
+	"github.com/sungjunleeee/juncoin/db"
+)
 
 func main() {
-	blockchain.BlockChain()
+	defer db.Close()
+	cli.Start()
 }
