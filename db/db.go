@@ -28,3 +28,21 @@ func DB() *bolt.DB {
 	}
 	return db
 }
+
+func SaveBlock(hash string, data []byte) {
+	err := DB().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+		err := b.Put([]byte(hash), data)
+		return err
+	})
+	utils.HandleErr(err)
+}
+
+func SaveBlockchain(data []byte) {
+	err := DB().Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(dataBucket))
+		err := b.Put([]byte("checkpoint"), data)
+		return err
+	})
+	utils.HandleErr(err)
+}

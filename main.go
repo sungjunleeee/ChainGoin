@@ -1,9 +1,11 @@
 package main
 
 import (
-	"github.com/sungjunleeee/juncoin/cli"
+	"github.com/sungjunleeee/juncoin/blockchain"
 )
 
 func main() {
-	cli.Start()
+	blockchain.BlockChain().AddBlock("First")
+	blockchain.BlockChain().AddBlock("Second")
+	blockchain.BlockChain().AddBlock("Third")
 }
