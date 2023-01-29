@@ -9,6 +9,7 @@ const (
 	dbName       = "blockchain.db"
 	dataBucket   = "data"
 	blocksBucket = "blocks"
+	checkpoint   = "checkpoint"
 )
 
 var db *bolt.DB
@@ -41,8 +42,18 @@ func SaveBlock(hash string, data []byte) {
 func SaveBlockchain(data []byte) {
 	err := DB().Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(dataBucket))
-		err := b.Put([]byte("checkpoint"), data)
+		err := b.Put([]byte(checkpoint), data)
 		return err
 	})
 	utils.HandleErr(err)
+}
+
+func Checkpoint() []byte {
+	var data []byte
+	DB().View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(dataBucket))
+		data = b.Get([]byte(checkpoint))
+		return nil
+	})
+	return data
 }
