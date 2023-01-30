@@ -4,12 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/sungjunleeee/juncoin/db"
 	"github.com/sungjunleeee/juncoin/utils"
 )
-
-const difficulty int = 2
 
 type Block struct {
 	Data       string `json:"data"`
@@ -18,6 +17,7 @@ type Block struct {
 	Height     int    `json:"height"`
 	Difficulty int    `json:"difficulty"`
 	Nonce      int    `json:"nonce"`
+	Timestamp  int    `json:"timestamp"`
 }
 
 func (b *Block) persist() {
@@ -43,6 +43,7 @@ func FindBlock(hash string) (*Block, error) {
 func (b *Block) mine() {
 	target := strings.Repeat("0", b.Difficulty)
 	for {
+		b.Timestamp = int(time.Now().Unix())
 		strBlock := []byte(fmt.Sprint(b))
 		hash := utils.Hash(strBlock)
 		fmt.Printf("Block as String:%s\nHash:%s\nTarget:%s\nNonce:%d\n\n", strBlock, hash, target, b.Nonce)
@@ -60,7 +61,7 @@ func createBlock(data string, prevHash string, height int) *Block {
 		Hash:       "",
 		PrevHash:   prevHash,
 		Height:     height,
-		Difficulty: difficulty,
+		Difficulty: BlockChain().difficulty(),
 		Nonce:      0,
 	}
 	block.mine()
