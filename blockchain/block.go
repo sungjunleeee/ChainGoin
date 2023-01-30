@@ -46,7 +46,7 @@ func (b *Block) mine() {
 		b.Timestamp = int(time.Now().Unix())
 		strBlock := []byte(fmt.Sprint(b))
 		hash := utils.Hash(strBlock)
-		fmt.Printf("Block as String:%s\nHash:%s\nTarget:%s\nNonce:%d\n\n", strBlock, hash, target, b.Nonce)
+		fmt.Printf("\n\nTarget:%s\nHash:%s\nNonce:%d\n\n", target, hash, b.Nonce)
 		if strings.HasPrefix(hash, target) {
 			b.Hash = hash
 			break
@@ -61,7 +61,7 @@ func createBlock(data string, prevHash string, height int) *Block {
 		Hash:       "",
 		PrevHash:   prevHash,
 		Height:     height,
-		Difficulty: BlockChain().difficulty(),
+		Difficulty: Blockchain().difficulty(),
 		Nonce:      0,
 	}
 	block.mine()

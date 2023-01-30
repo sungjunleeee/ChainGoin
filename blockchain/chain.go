@@ -80,8 +80,8 @@ func (b *blockchain) difficulty() int {
 	}
 }
 
-// BlockChain returns a blockchain instance.
-func BlockChain() *blockchain {
+// Blockchain returns a blockchain instance.
+func Blockchain() *blockchain {
 	if b == nil {
 		// This is a thread-safe way to create a singleton.
 		once.Do(func() {

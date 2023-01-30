@@ -38,12 +38,17 @@ type errorResponse struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-func documentation(w http.ResponseWriter, r *http.Request) {
+func showDocumentation(w http.ResponseWriter, r *http.Request) {
 	data := []urlDescription{
 		{
 			URL:         url("/"),
 			Method:      "GET",
 			Description: "See documentation",
+		},
+		{
+			URL:         url("/status"),
+			Method:      "GET",
+			Description: "See status of the blockchain",
 		},
 		{
 			URL:         url("/blocks"),
@@ -68,12 +73,12 @@ func documentation(w http.ResponseWriter, r *http.Request) {
 func getBlocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(w).Encode(blockchain.BlockChain().GetAllBlocks())
+		json.NewEncoder(w).Encode(blockchain.Blockchain().GetAllBlocks())
 	case "POST":
 		var addBlockBody addBlockBody
 		// Decode (Unmarshal) is case-insensitive: Message == message
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody))
-		blockchain.BlockChain().AddBlock(addBlockBody.Message)
+		blockchain.Blockchain().AddBlock(addBlockBody.Message)
 		w.WriteHeader(http.StatusCreated)
 	}
 }
@@ -97,12 +102,17 @@ func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func getStatus(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(blockchain.Blockchain())
+}
+
 // Start starts the rest API
 func Start(newPort int) {
 	port = fmt.Sprintf(":%d", newPort)
 	router := mux.NewRouter()
 	router.Use(jsonContentTypeMiddleware) // middleware for routes below
-	router.HandleFunc("/", documentation).Methods("GET")
+	router.HandleFunc("/", showDocumentation).Methods("GET")
+	router.HandleFunc("/status", getStatus).Methods("GET")
 	router.HandleFunc("/blocks", getBlocks).Methods("GET", "POST") // won't allow other methods
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", findBlock).Methods("GET")
 	fmt.Printf("Server is running on http://localhost%s\n", port)
