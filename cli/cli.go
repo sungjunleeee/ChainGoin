@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/sungjunleeee/juncoin/explorer"
 	"github.com/sungjunleeee/juncoin/rest"
@@ -15,7 +14,7 @@ func usage() {
 	fmt.Printf("Instructions for flags:\n")
 	fmt.Printf("-mode:	Choose between html | rest | all\n")
 	fmt.Printf("-port:	Set the port of the server\n")
-	runtime.Goexit()
+	os.Exit(1)
 }
 
 // Start starts the cli
