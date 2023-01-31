@@ -31,8 +31,8 @@ func (b *blockchain) persist() {
 	db.SaveBlockchain(utils.ToByte(b))
 }
 
-func (b *blockchain) AddBlock(data string) {
-	block := createBlock(data, b.LatestHash, b.Height+1)
+func (b *blockchain) AddBlock() {
+	block := createBlock(b.LatestHash, b.Height+1)
 	b.LatestHash = block.Hash
 	b.Height = block.Height
 	b.Difficulty = block.Difficulty
@@ -91,7 +91,7 @@ func Blockchain() *blockchain {
 			// Check if there is a b lockchain in the database.
 			checkpoint := db.SaveCheckpoint()
 			if checkpoint == nil {
-				b.AddBlock("Genesis Block")
+				b.AddBlock()
 			} else {
 				// Restore b from bytes (database)
 				b.restore(checkpoint)
