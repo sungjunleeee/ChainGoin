@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/sungjunleeee/juncoin/cli"
-	"github.com/sungjunleeee/juncoin/db"
+	"github.com/sungjunleeee/ChainGoin/cli"
+	"github.com/sungjunleeee/ChainGoin/db"
 )
 
 func main() {

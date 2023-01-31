@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sungjunleeee/juncoin/explorer"
-	"github.com/sungjunleeee/juncoin/rest"
+	"github.com/sungjunleeee/ChainGoin/explorer"
+	"github.com/sungjunleeee/ChainGoin/rest"
 )
 
 func usage() {
-	fmt.Printf("Welcome to Juncoin CLI\n")
+	fmt.Printf("Welcome to ChainGoin CLI\n")
 	fmt.Printf("Instructions for flags:\n")
 	fmt.Printf("-mode:	Choose between html | rest | all\n")
 	fmt.Printf("-port:	Set the port of the server\n")

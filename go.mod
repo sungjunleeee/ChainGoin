@@ -1,4 +1,4 @@
-module github.com/sungjunleeee/juncoin
+module github.com/sungjunleeee/ChainGoin
 
 go 1.19
 

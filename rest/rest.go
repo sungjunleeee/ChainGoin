@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/sungjunleeee/juncoin/blockchain"
-	"github.com/sungjunleeee/juncoin/utils"
+	"github.com/sungjunleeee/ChainGoin/blockchain"
+	"github.com/sungjunleeee/ChainGoin/utils"
 )
 
 var port string

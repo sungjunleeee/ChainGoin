@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sungjunleeee/juncoin/db"
-	"github.com/sungjunleeee/juncoin/utils"
+	"github.com/sungjunleeee/ChainGoin/db"
+	"github.com/sungjunleeee/ChainGoin/utils"
 )
 
 type Block struct {
