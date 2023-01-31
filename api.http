@@ -2,11 +2,18 @@
 ### View API documentation
 http://localhost:4000/
 
-###
+### Getting status
 http://localhost:4000/status
 
-### Getting all blocks
+### Getting balance from a user
+http://localhost:4000/balance/jun
+
+### Getting total balance from a user
+http://localhost:4000/balance/jun?total=true
+
+### Getting all blocks (confirmed)
 http://localhost:4000/blocks
+
 ### Adding a block
 POST http://localhost:4000/blocks
 
@@ -14,11 +21,16 @@ POST http://localhost:4000/blocks
     "message": "Mine!"
 }
 
+### Adding a transaction
 POST http://localhost:4000/transactions
+
 {
     "to": "Tim",
-    "amount": 20, 
+    "amount": 30
 }
 
-### Finding a block with an id
+### Getting all transactions (unconfirmed)
+http://localhost:4000/mempool
+
+### Finding a block with an ID
 http://localhost:4000/blocks/c57fca35b986fc973b8f1b535ae9970c081606d5bffde0c3def73cba9cf50bf9

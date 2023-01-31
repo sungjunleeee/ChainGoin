@@ -40,7 +40,7 @@ type TxOut struct {
 
 func makeCoinbaseTx(address string) *Tx {
 	txIns := []*TxIn{
-		{"BLOCKCHAIN", minerReward},
+		{"COINBASE", minerReward},
 	}
 	txOuts := []*TxOut{
 		{address, minerReward},
@@ -88,10 +88,17 @@ func makeTx(from, to string, amount int) (*Tx, error) {
 }
 
 func (m *mempool) AddTx(to string, amount int) error {
-	tx, err := makeTx("jun", to, amount)
+	tx, err := makeTx("Jun", to, amount)
 	if err != nil {
 		return err
 	}
 	m.Txs = append(m.Txs, tx)
 	return nil
+}
+
+func (m *mempool) LoadMempool() []*Tx {
+	coinbase := makeCoinbaseTx("Jun") // reward to the miner
+	txs := append(m.Txs, coinbase)
+	m.Txs = nil // reset mempool
+	return txs
 }
