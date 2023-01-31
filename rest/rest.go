@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sungjunleeee/ChainGoin/blockchain"
+	"github.com/sungjunleeee/ChainGoin/utils"
 )
 
 var port string
@@ -26,6 +27,11 @@ type urlDescription struct {
 	Method      string `json:"method"`
 	Description string `json:"description"`
 	Payload     string `json:"payload,omitempty"`
+}
+
+type balanceResponse struct {
+	Address string `json:"address"`
+	Balance int    `json:"balance"`
 }
 
 type errorResponse struct {
@@ -59,6 +65,11 @@ func showDocumentation(w http.ResponseWriter, r *http.Request) {
 			URL:         url("/blocks/{hash}"),
 			Method:      "GET",
 			Description: "See a block",
+		},
+		{
+			URL:         url("/balance/{address}"),
+			Method:      "GET",
+			Description: "See balance of an address",
 		},
 	}
 	json.NewEncoder(w).Encode(data)
@@ -97,6 +108,19 @@ func getStatus(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(blockchain.Blockchain())
 }
 
+func getBalance(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+	total := r.URL.Query().Get("total")
+	if total == "true" {
+		balance := blockchain.Blockchain().GetBalanceByAddress(address)
+		json.NewEncoder(w).Encode(balanceResponse{address, balance})
+	} else {
+		err := json.NewEncoder(w).Encode(blockchain.Blockchain().FilterTxOutsByAddress(address))
+		utils.HandleErr(err)
+	}
+}
+
 // Start starts the rest API
 func Start(newPort int) {
 	port = fmt.Sprintf(":%d", newPort)
@@ -106,6 +130,7 @@ func Start(newPort int) {
 	router.HandleFunc("/status", getStatus).Methods("GET")
 	router.HandleFunc("/blocks", getBlocks).Methods("GET", "POST") // won't allow other methods
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", findBlock).Methods("GET")
+	router.HandleFunc("/balance/{address}", getBalance).Methods("GET")
 	fmt.Printf("Server is running on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
 }

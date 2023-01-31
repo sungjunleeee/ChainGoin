@@ -80,6 +80,37 @@ func (b *blockchain) difficulty() int {
 	}
 }
 
+func (b *blockchain) getTxOuts() []*TxOut {
+	var txOuts []*TxOut
+	blocks := b.GetAllBlocks()
+	for _, block := range blocks {
+		for _, tx := range block.Transactions {
+			txOuts = append(txOuts, tx.TxOuts...)
+		}
+	}
+	return txOuts
+}
+
+func (b *blockchain) FilterTxOutsByAddress(address string) []*TxOut {
+	var filteredTxOuts []*TxOut
+	txOuts := b.getTxOuts()
+	for _, txOut := range txOuts {
+		if txOut.Owner == address {
+			filteredTxOuts = append(filteredTxOuts, txOut)
+		}
+	}
+	return filteredTxOuts
+}
+
+func (b *blockchain) GetBalanceByAddress(address string) int {
+	txOuts := b.FilterTxOutsByAddress(address)
+	var balance int
+	for _, txOut := range txOuts {
+		balance += txOut.Amount
+	}
+	return balance
+}
+
 // Blockchain returns a blockchain instance.
 func Blockchain() *blockchain {
 	if b == nil {
