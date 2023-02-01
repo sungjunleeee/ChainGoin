@@ -26,7 +26,7 @@ POST http://localhost:4000/transactions
 
 {
     "to": "Tim",
-    "amount": 65
+    "amount": 15
 }
 
 ### Getting all transactions (unconfirmed)

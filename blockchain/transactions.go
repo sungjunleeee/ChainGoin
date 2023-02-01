@@ -49,12 +49,17 @@ type UTxOut struct {
 }
 
 func isOnMempool(uTxOut *UTxOut) bool {
+	exists := false
+Outer:
 	for _, tx := range Mempool.Txs {
 		for _, input := range tx.TxIns {
-			return input.TxID == uTxOut.TxID && input.Index == uTxOut.Index
+			if input.TxID == uTxOut.TxID && input.Index == uTxOut.Index {
+				exists = true
+				break Outer
+			}
 		}
 	}
-	return false
+	return exists
 }
 
 func makeCoinbaseTx(address string) *Tx {
@@ -75,13 +80,13 @@ func makeCoinbaseTx(address string) *Tx {
 }
 
 func makeTx(from, to string, amount int) (*Tx, error) {
-	if Blockchain().GetBalanceByAddress(from) < amount {
+	if GetBalanceByAddress(from, Blockchain()) < amount {
 		return nil, errors.New("Not enough balance")
 	}
 	var txOuts []*TxOut
 	var txIns []*TxIn
 	total := 0
-	uTxOuts := Blockchain().FilterUTxOutsByAddress(from)
+	uTxOuts := FilterUTxOutsByAddress(from, Blockchain())
 	// 1. Find enough unspent TxOuts for transfer
 	for _, uTxOut := range uTxOuts {
 		if total >= amount {

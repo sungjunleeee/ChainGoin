@@ -27,19 +27,19 @@ func (b *blockchain) restore(data []byte) {
 	utils.FromByte(b, data)
 }
 
-func (b *blockchain) persist() {
-	db.SaveBlockchain(utils.ToByte(b))
-}
-
 func (b *blockchain) AddBlock() {
 	block := createBlock(b.LatestHash, b.Height+1)
 	b.LatestHash = block.Hash
 	b.Height = block.Height
 	b.Difficulty = block.Difficulty
-	b.persist()
+	persistBlockchain(b)
 }
 
-func (b *blockchain) GetAllBlocks() []*Block {
+func persistBlockchain(b *blockchain) {
+	db.SaveBlockchain(utils.ToByte(b))
+}
+
+func GetAllBlocks(b *blockchain) []*Block {
 	var blocks []*Block
 	currentBlock := b.LatestHash
 	for {
@@ -54,8 +54,8 @@ func (b *blockchain) GetAllBlocks() []*Block {
 	return blocks
 }
 
-func (b *blockchain) evalDifficulty() int {
-	allBlocks := b.GetAllBlocks()
+func evalDifficulty(b *blockchain) int {
+	allBlocks := GetAllBlocks(b)
 	// newest is on the first part since we are iterating from the latest block
 	latestBlock := allBlocks[0]
 	latestEvalBlock := allBlocks[evalInterval-1]
@@ -70,21 +70,21 @@ func (b *blockchain) evalDifficulty() int {
 	}
 }
 
-func (b *blockchain) difficulty() int {
+func difficulty(b *blockchain) int {
 	if b.Height == 0 {
 		return defaultDifficulty
 	} else if b.Height%evalInterval == 0 {
-		return b.evalDifficulty()
+		return evalDifficulty(b)
 	} else {
 		return b.Difficulty
 	}
 }
 
 // FilterUTxOutsByAddress returns all unspent TxOuts by address.
-func (b *blockchain) FilterUTxOutsByAddress(address string) []*UTxOut {
+func FilterUTxOutsByAddress(address string, b *blockchain) []*UTxOut {
 	var uTxOuts []*UTxOut
 	sTxOuts := make(map[string]bool) // string: Tx ID, bool: true if spent
-	for _, block := range b.GetAllBlocks() {
+	for _, block := range GetAllBlocks(b) {
 		for _, tx := range block.Transactions {
 			for _, input := range tx.TxIns {
 				if input.Owner == address {
@@ -112,8 +112,8 @@ func (b *blockchain) FilterUTxOutsByAddress(address string) []*UTxOut {
 	return uTxOuts
 }
 
-func (b *blockchain) GetBalanceByAddress(address string) int {
-	txOuts := b.FilterUTxOutsByAddress(address)
+func GetBalanceByAddress(address string, b *blockchain) int {
+	txOuts := FilterUTxOutsByAddress(address, b)
 	var balance int
 	for _, txOut := range txOuts {
 		balance += txOut.Amount
@@ -123,21 +123,19 @@ func (b *blockchain) GetBalanceByAddress(address string) int {
 
 // Blockchain returns a blockchain instance.
 func Blockchain() *blockchain {
-	if b == nil {
-		// This is a thread-safe way to create a singleton.
-		once.Do(func() {
-			b = &blockchain{
-				Height: 0,
-			}
-			// Check if there is a b lockchain in the database.
-			checkpoint := db.SaveCheckpoint()
-			if checkpoint == nil {
-				b.AddBlock()
-			} else {
-				// Restore b from bytes (database)
-				b.restore(checkpoint)
-			}
-		})
-	}
+	// This is a thread-safe way to create a singleton.
+	once.Do(func() {
+		b = &blockchain{
+			Height: 0,
+		}
+		// Check if there is a b lockchain in the database.
+		checkpoint := db.SaveCheckpoint()
+		if checkpoint == nil {
+			b.AddBlock()
+		} else {
+			// Restore b from bytes (database)
+			b.restore(checkpoint)
+		}
+	})
 	return b
 }

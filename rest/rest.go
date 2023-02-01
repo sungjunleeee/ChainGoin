@@ -83,7 +83,7 @@ func showDocumentation(w http.ResponseWriter, r *http.Request) {
 func getBlocks(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(w).Encode(blockchain.Blockchain().GetAllBlocks())
+		json.NewEncoder(w).Encode(blockchain.GetAllBlocks(blockchain.Blockchain()))
 	case "POST":
 		blockchain.Blockchain().AddBlock()
 		w.WriteHeader(http.StatusCreated)
@@ -118,10 +118,10 @@ func getBalance(w http.ResponseWriter, r *http.Request) {
 	address := vars["address"]
 	total := r.URL.Query().Get("total")
 	if total == "true" {
-		balance := blockchain.Blockchain().GetBalanceByAddress(address)
+		balance := blockchain.GetBalanceByAddress(address, blockchain.Blockchain())
 		json.NewEncoder(w).Encode(balanceResponse{address, balance})
 	} else {
-		err := json.NewEncoder(w).Encode(blockchain.Blockchain().FilterUTxOutsByAddress(address))
+		err := json.NewEncoder(w).Encode(blockchain.FilterUTxOutsByAddress(address, blockchain.Blockchain()))
 		utils.HandleErr(err)
 	}
 }
