@@ -80,30 +80,40 @@ func (b *blockchain) difficulty() int {
 	}
 }
 
-func (b *blockchain) getTxOuts() []*TxOut {
-	var txOuts []*TxOut
-	blocks := b.GetAllBlocks()
-	for _, block := range blocks {
+// FilterUTxOutsByAddress returns all unspent TxOuts by address.
+func (b *blockchain) FilterUTxOutsByAddress(address string) []*UTxOut {
+	var uTxOuts []*UTxOut
+	sTxOuts := make(map[string]bool) // string: Tx ID, bool: true if spent
+	for _, block := range b.GetAllBlocks() {
 		for _, tx := range block.Transactions {
-			txOuts = append(txOuts, tx.TxOuts...)
+			for _, input := range tx.TxIns {
+				if input.Owner == address {
+					// TxOut is spent if the address of the input
+					// matches with the address that was in the TxOuts
+					sTxOuts[input.TxID] = true
+				}
+			}
+			for i, output := range tx.TxOuts {
+				if _, ok := sTxOuts[tx.ID]; output.Owner == address && !ok {
+					// TxOut is not spent
+					uTxOut := &UTxOut{
+						TxID:   tx.ID,
+						Index:  i,
+						Amount: output.Amount,
+					}
+					if !isOnMempool(uTxOut) {
+						// and it is not on the mempool
+						uTxOuts = append(uTxOuts, uTxOut)
+					}
+				}
+			}
 		}
 	}
-	return txOuts
-}
-
-func (b *blockchain) FilterTxOutsByAddress(address string) []*TxOut {
-	var filteredTxOuts []*TxOut
-	txOuts := b.getTxOuts()
-	for _, txOut := range txOuts {
-		if txOut.Owner == address {
-			filteredTxOuts = append(filteredTxOuts, txOut)
-		}
-	}
-	return filteredTxOuts
+	return uTxOuts
 }
 
 func (b *blockchain) GetBalanceByAddress(address string) int {
-	txOuts := b.FilterTxOutsByAddress(address)
+	txOuts := b.FilterUTxOutsByAddress(address)
 	var balance int
 	for _, txOut := range txOuts {
 		balance += txOut.Amount
