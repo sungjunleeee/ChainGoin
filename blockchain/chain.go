@@ -28,7 +28,7 @@ func (b *blockchain) restore(data []byte) {
 }
 
 func (b *blockchain) AddBlock() {
-	block := createBlock(b.LatestHash, b.Height+1)
+	block := createBlock(b.LatestHash, b.Height+1, getDifficulty(b))
 	b.LatestHash = block.Hash
 	b.Height = block.Height
 	b.Difficulty = block.Difficulty
@@ -70,7 +70,7 @@ func evalDifficulty(b *blockchain) int {
 	}
 }
 
-func difficulty(b *blockchain) int {
+func getDifficulty(b *blockchain) int {
 	if b.Height == 0 {
 		return defaultDifficulty
 	} else if b.Height%evalInterval == 0 {
@@ -128,8 +128,8 @@ func Blockchain() *blockchain {
 		b = &blockchain{
 			Height: 0,
 		}
-		// Check if there is a b lockchain in the database.
-		checkpoint := db.SaveCheckpoint()
+		// Check if there is a blockchain in the database.
+		checkpoint := db.LoadBlockchain()
 		if checkpoint == nil {
 			b.AddBlock()
 		} else {

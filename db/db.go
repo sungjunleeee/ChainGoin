@@ -52,7 +52,7 @@ func SaveBlockchain(data []byte) {
 	utils.HandleErr(err)
 }
 
-func SaveCheckpoint() []byte {
+func LoadBlockchain() []byte {
 	var data []byte
 	DB().View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(dataBucket))
