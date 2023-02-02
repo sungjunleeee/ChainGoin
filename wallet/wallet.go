@@ -5,7 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"encoding/hex"
 	"fmt"
+	"math/big"
 	"os"
 
 	"github.com/sungjunleeee/ChainGoin/utils"
@@ -48,6 +50,51 @@ func restoreKey() *ecdsa.PrivateKey {
 func getAddrFromKey(key *ecdsa.PrivateKey) string {
 	publicKey := append(key.X.Bytes(), key.Y.Bytes()...)
 	return fmt.Sprintf("%x", publicKey)
+}
+
+func sign(payload string, w *wallet) string {
+	payloadAsBytes, err := hex.DecodeString(payload)
+	utils.HandleErr(err)
+	r, s, err := ecdsa.Sign(rand.Reader, w.privateKey, payloadAsBytes)
+	signature := append(r.Bytes(), s.Bytes()...)
+	return fmt.Sprintf("%x", signature)
+}
+
+func converToBigInts(payload string) (*big.Int, *big.Int, error) {
+	bytes, err := hex.DecodeString(payload)
+	if err != nil {
+		return nil, nil, err
+	}
+	firstHalfBytes := bytes[:len(bytes)/2]
+	secondHalfBytes := bytes[len(bytes)/2:]
+
+	bigA, bigB := big.Int{}, big.Int{}
+	bigA.SetBytes(firstHalfBytes)
+	bigB.SetBytes(secondHalfBytes)
+
+	return &bigA, &bigB, nil
+}
+
+func verify(signature, payload, address string) bool {
+	// 1. Restore signature to r, s
+	r, s, err := converToBigInts(signature)
+	utils.HandleErr(err)
+
+	// 2. Restore public key to x, y
+	x, y, err := converToBigInts(address)
+	utils.HandleErr(err)
+
+	// 3. Restore public key
+	publicKey := ecdsa.PublicKey{
+		Curve: elliptic.P256(),
+		X:     x,
+		Y:     y,
+	}
+
+	// 4. Verify
+	payloadAsBytes, err := hex.DecodeString(payload)
+	utils.HandleErr(err)
+	return ecdsa.Verify(&publicKey, payloadAsBytes, r, s)
 }
 
 func Wallet() *wallet {
