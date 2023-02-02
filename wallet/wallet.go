@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
+	"fmt"
 	"os"
 
 	"github.com/sungjunleeee/ChainGoin/utils"
@@ -14,6 +15,7 @@ const filename = "chaingoin.wallet"
 
 type wallet struct {
 	privateKey *ecdsa.PrivateKey
+	Address    string
 }
 
 var w *wallet
@@ -36,16 +38,29 @@ func persistPrivateKey(key *ecdsa.PrivateKey) {
 	utils.HandleErr(err)
 }
 
+func restoreKey() *ecdsa.PrivateKey {
+	keyAsBytes, err := os.ReadFile(filename)
+	utils.HandleErr(err)
+	privateKey, err := x509.ParseECPrivateKey(keyAsBytes)
+	return privateKey
+}
+
+func getAddrFromKey(key *ecdsa.PrivateKey) string {
+	publicKey := append(key.X.Bytes(), key.Y.Bytes()...)
+	return fmt.Sprintf("%x", publicKey)
+}
+
 func Wallet() *wallet {
 	if w == nil {
 		w = &wallet{}
 		if checkWalletFile() {
-
+			w.privateKey = restoreKey()
 		} else {
 			key := createPrivateKey()
 			persistPrivateKey(key)
 			w.privateKey = key
 		}
+		w.Address = getAddrFromKey(w.privateKey)
 	}
 	return w
 }

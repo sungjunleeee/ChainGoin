@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/sungjunleeee/ChainGoin/utils"
+	"github.com/sungjunleeee/ChainGoin/wallet"
 )
 
 const (
@@ -125,7 +126,7 @@ func makeTx(from, to string, amount int) (*Tx, error) {
 }
 
 func (m *mempool) AddTx(to string, amount int) error {
-	tx, err := makeTx("Jun", to, amount)
+	tx, err := makeTx(wallet.Wallet().Address, to, amount)
 	if err != nil {
 		return err
 	}
@@ -134,7 +135,7 @@ func (m *mempool) AddTx(to string, amount int) error {
 }
 
 func (m *mempool) LoadMempool() []*Tx {
-	coinbase := makeCoinbaseTx("Jun") // reward to the miner
+	coinbase := makeCoinbaseTx(wallet.Wallet().Address) // reward to the miner
 	txs := append(m.Txs, coinbase)
 	m.Txs = nil // reset mempool
 	return txs
