@@ -1,11 +1,7 @@
 package main
 
-import (
-	"github.com/sungjunleeee/ChainGoin/cli"
-	"github.com/sungjunleeee/ChainGoin/db"
-)
+import "github.com/sungjunleeee/ChainGoin/wallet"
 
 func main() {
-	defer db.Close()
-	cli.Start()
+	wallet.Wallet()
 }
