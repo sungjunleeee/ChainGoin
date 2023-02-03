@@ -47,20 +47,23 @@ func restoreKey() *ecdsa.PrivateKey {
 	return privateKey
 }
 
-func getAddrFromKey(key *ecdsa.PrivateKey) string {
-	publicKey := append(key.X.Bytes(), key.Y.Bytes()...)
-	return fmt.Sprintf("%x", publicKey)
+func encodeBigIntsToHex(a, b *big.Int) string {
+	z := append(a.Bytes(), b.Bytes()...)
+	return fmt.Sprintf("%x", z)
 }
 
-func sign(payload string, w *wallet) string {
+func getAddrFromKey(key *ecdsa.PrivateKey) string {
+	return encodeBigIntsToHex(key.X, key.Y)
+}
+
+func Sign(payload string, w *wallet) string {
 	payloadAsBytes, err := hex.DecodeString(payload)
 	utils.HandleErr(err)
 	r, s, err := ecdsa.Sign(rand.Reader, w.privateKey, payloadAsBytes)
-	signature := append(r.Bytes(), s.Bytes()...)
-	return fmt.Sprintf("%x", signature)
+	return encodeBigIntsToHex(r, s)
 }
 
-func converToBigInts(payload string) (*big.Int, *big.Int, error) {
+func convertToBigInts(payload string) (*big.Int, *big.Int, error) {
 	bytes, err := hex.DecodeString(payload)
 	if err != nil {
 		return nil, nil, err
@@ -75,13 +78,13 @@ func converToBigInts(payload string) (*big.Int, *big.Int, error) {
 	return &bigA, &bigB, nil
 }
 
-func verify(signature, payload, address string) bool {
+func Verify(signature, payload, address string) bool {
 	// 1. Restore signature to r, s
-	r, s, err := converToBigInts(signature)
+	r, s, err := convertToBigInts(signature)
 	utils.HandleErr(err)
 
 	// 2. Restore public key to x, y
-	x, y, err := converToBigInts(address)
+	x, y, err := convertToBigInts(address)
 	utils.HandleErr(err)
 
 	// 3. Restore public key

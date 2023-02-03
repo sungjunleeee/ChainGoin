@@ -54,6 +54,23 @@ func GetAllBlocks(b *blockchain) []*Block {
 	return blocks
 }
 
+func getAllTransactions(b *blockchain) []*Tx {
+	var txs []*Tx
+	for _, block := range GetAllBlocks(b) {
+		txs = append(txs, block.Transactions...)
+	}
+	return txs
+}
+
+func FindTx(b *blockchain, txID string) *Tx {
+	for _, tx := range getAllTransactions(b) {
+		if tx.ID == txID {
+			return tx
+		}
+	}
+	return nil
+}
+
 func evalDifficulty(b *blockchain) int {
 	allBlocks := GetAllBlocks(b)
 	// newest is on the first part since we are iterating from the latest block
@@ -87,14 +104,17 @@ func FilterUTxOutsByAddress(address string, b *blockchain) []*UTxOut {
 	for _, block := range GetAllBlocks(b) {
 		for _, tx := range block.Transactions {
 			for _, input := range tx.TxIns {
-				if input.Owner == address {
+				if input.Signature == "COINBASE" {
+					break
+				}
+				if FindTx(b, input.TxID).TxOuts[input.Index].Address == address {
 					// TxOut is spent if the address of the input
 					// matches with the address that was in the TxOuts
 					sTxOuts[input.TxID] = true
 				}
 			}
 			for i, output := range tx.TxOuts {
-				if _, ok := sTxOuts[tx.ID]; output.Owner == address && !ok {
+				if _, ok := sTxOuts[tx.ID]; output.Address == address && !ok {
 					// TxOut is not spent
 					uTxOut := &UTxOut{
 						TxID:   tx.ID,
