@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sungjunleeee/ChainGoin/blockchain"
 	"github.com/sungjunleeee/ChainGoin/utils"
+	"github.com/sungjunleeee/ChainGoin/wallet"
 )
 
 var port string
@@ -32,6 +33,10 @@ type urlDescription struct {
 type balanceResponse struct {
 	Address string `json:"address"`
 	Balance int    `json:"balance"`
+}
+
+type walletResponse struct {
+	Address string `json:"address"`
 }
 
 type addTxPayload struct {
@@ -142,6 +147,11 @@ func createTxs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func getWallet(w http.ResponseWriter, r *http.Request) {
+	address := wallet.Wallet().Address
+	json.NewEncoder(w).Encode(walletResponse{Address: address})
+}
+
 // Start starts the rest API
 func Start(newPort int) {
 	port = fmt.Sprintf(":%d", newPort)
@@ -153,6 +163,7 @@ func Start(newPort int) {
 	router.HandleFunc("/blocks/{hash:[a-f0-9]+}", findBlock).Methods("GET")
 	router.HandleFunc("/balance/{address}", getBalance).Methods("GET")
 	router.HandleFunc("/mempool", getMempool).Methods("GET")
+	router.HandleFunc("/wallet", getWallet).Methods("GET")
 	router.HandleFunc("/transactions", createTxs).Methods("POST")
 	fmt.Printf("Server is running on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, router))
