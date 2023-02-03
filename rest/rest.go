@@ -142,7 +142,9 @@ func createTxs(w http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(err)
 	err = blockchain.Mempool.AddTx(payload.To, payload.Amount)
 	if err != nil {
-		json.NewEncoder(w).Encode(errorResponse{"Not enough balance"})
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err.Error())
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 }

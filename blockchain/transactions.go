@@ -59,7 +59,7 @@ func validate(tx *Tx) bool {
 	valid := true
 	for _, txIn := range tx.TxIns {
 		// 1. Find the transaction
-		// whose unspent outputis used as an input
+		// whose unspent output is used as an input
 		prevTx := FindTx(Blockchain(), txIn.TxID)
 		if prevTx == nil {
 			valid = false
